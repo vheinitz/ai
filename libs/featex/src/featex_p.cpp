@@ -183,11 +183,35 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		cv::bilateralFilter( ObjectDb::inst()._imgdb[src], tmp, 3, 6, 6 );
 		ObjectDb::inst()._imgdb[dst] = tmp;
 	}
+	else if ( op == "normalize" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int a = tmp.section(",",0,0).toInt(); 
+		//int max = tmp.section(",",1,1).toInt(); 
+		cv::Mat n;
+		cv::normalize( m, n, 0, a, cv::NORM_MINMAX );
+		ObjectDb::inst()._imgdb[dst] = n;
+	}
 	else if ( op == "sobel" )
 	{
-		cv::Mat tmp;
-   		cv::Sobel( ObjectDb::inst()._imgdb[src], tmp, CV_32F, 1, 0 );
-		ObjectDb::inst()._imgdb[dst] = tmp;
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int x = tmp.section(",",0,0).toInt(); 
+		int y = tmp.section(",",1,1).toInt(); 
+		cv::Mat sob;
+   		cv::Sobel( m, sob, CV_32F, x, y );
+		ObjectDb::inst()._imgdb[dst] = sob;
+	}
+	else if ( op == "resize" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int w = tmp.section(",",0,0).toInt(); 
+		int h = tmp.section(",",1,1).toInt(); 
+		cv::Mat r;
+		cv::resize( m, r, cv::Size(w, h) );
+		ObjectDb::inst()._imgdb[dst] = r;
 	}
 	else if ( op == "tile" )
 	{
@@ -198,8 +222,8 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		int rows = tmp.section(",",2,2).toInt();
 		int cols = tmp.section(",",3,3).toInt();
 		cv::Rect roi( m.cols/cols*cidx, m.rows/rows*ridx, m.cols/cols, m.rows/rows);
-		cv::Mat img = ObjectDb::inst()._imgdb[src];//
-		cv::Mat tile = img(roi);//(roi).clone();
+		//cv::Mat img = ObjectDb::inst()._imgdb[src];//
+		cv::Mat tile = m(roi).clone();
 		ObjectDb::inst()._imgdb[dst] = tile;
 	}
 	else if ( op == "dftm" )

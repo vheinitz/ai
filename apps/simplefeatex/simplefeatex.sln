@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simplefeatex", "simplefeatex.vcproj", "{51C5EB4E-A6D6-385C-AC10-CD554E2395AF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simplefeatex", "simplefeatex.vcproj", "{A9685FED-D89D-36C4-AD9B-F08DB53ADDF1}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055} = {DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}
-		{CD6BD4C9-391B-39C0-A3C7-4C048239433C} = {CD6BD4C9-391B-39C0-A3C7-4C048239433C}
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50} = {A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "featex", "..\..\libs\featex\featex.vcproj", "{CD6BD4C9-391B-39C0-A3C7-4C048239433C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "featex", "..\..\libs\featex\featex.vcproj", "{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl2", "..\..\..\cl2.git\cl2.vcproj", "{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}"
 EndProject
@@ -17,14 +17,14 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{51C5EB4E-A6D6-385C-AC10-CD554E2395AF}.Debug|Win32.ActiveCfg = Debug|Win32
-		{51C5EB4E-A6D6-385C-AC10-CD554E2395AF}.Debug|Win32.Build.0 = Debug|Win32
-		{51C5EB4E-A6D6-385C-AC10-CD554E2395AF}.Release|Win32.ActiveCfg = Release|Win32
-		{51C5EB4E-A6D6-385C-AC10-CD554E2395AF}.Release|Win32.Build.0 = Release|Win32
-		{CD6BD4C9-391B-39C0-A3C7-4C048239433C}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CD6BD4C9-391B-39C0-A3C7-4C048239433C}.Debug|Win32.Build.0 = Debug|Win32
-		{CD6BD4C9-391B-39C0-A3C7-4C048239433C}.Release|Win32.ActiveCfg = Release|Win32
-		{CD6BD4C9-391B-39C0-A3C7-4C048239433C}.Release|Win32.Build.0 = Release|Win32
+		{A9685FED-D89D-36C4-AD9B-F08DB53ADDF1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A9685FED-D89D-36C4-AD9B-F08DB53ADDF1}.Debug|Win32.Build.0 = Debug|Win32
+		{A9685FED-D89D-36C4-AD9B-F08DB53ADDF1}.Release|Win32.ActiveCfg = Release|Win32
+		{A9685FED-D89D-36C4-AD9B-F08DB53ADDF1}.Release|Win32.Build.0 = Release|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Debug|Win32.Build.0 = Debug|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Release|Win32.ActiveCfg = Release|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Release|Win32.Build.0 = Release|Win32
 		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Debug|Win32.Build.0 = Debug|Win32
 		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Release|Win32.ActiveCfg = Release|Win32

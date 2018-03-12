@@ -23,11 +23,12 @@ int main(int argc, char** argv)
 	QString rowIdType;
 	int verboseLevel=0;
 	int limit=999999999;
-	cv::Size rs;
+	cv::Size rs,outSize;
 	bool cleanOutDir=false;
-	QString outdir = "c:/tmp/cells/xxx";
-	QString infile = "c:/tmp/anca/img/10.png";
-	QString csv;
+	QString outdir = "c:/tmp/objex/out";
+	QString infile = "c:/tmp/objex/in";
+	QString csv,lcsv,dcsv;
+	bool csvOnly=false;
 	int label=-1;
 	
 	foreach( QString arg, app.arguments() )
@@ -44,6 +45,18 @@ int main(int argc, char** argv)
 		{
 			csv = arg.section("=",1);
 		}
+		else if (arg.contains("--lcsv=") )
+		{
+			lcsv = arg.section("=",1);
+		}
+		else if (arg.contains("--dcsv=") )
+		{
+			dcsv = arg.section("=",1);
+		}
+		else if (arg.contains("--csvonly") )
+		{
+			csvOnly = true;;
+		}
 		else if (arg.contains("--label=") )
 		{
 			label = arg.section("=",1).toInt();
@@ -57,6 +70,12 @@ int main(int argc, char** argv)
 			QString tmp = arg.section("=",1);
 			rs.width = tmp.section("x",0,0).toInt();
 			rs.height = tmp.section("x",1,1).toInt();
+		}
+		else if (arg.contains("--outsize") )
+		{
+			QString tmp = arg.section("=",1);
+			outSize.width = tmp.section("x",0,0).toInt();
+			outSize.height = tmp.section("x",1,1).toInt();
 		}
 		
 	}
@@ -96,13 +115,31 @@ int main(int argc, char** argv)
 			cv::Mat c = ce.cell(i);
 			cv::Rect cr=ce.cellRect(i);
 			QString fn = QString("obex_%1_%2_%3_%4x%5.png").arg(hash).arg(cr.x).arg(cr.y).arg(cr.width).arg(cr.height);
-			//cv::resize(c,c,cv::Size(32,32));
-			if( csv.isEmpty() )
+			
+			if( !outSize.area() == 0 )
+			{
+				cv::resize( c, c ,cv::Size( outSize.width, outSize.height ) );
+			}
+
+			if( !csvOnly )
+			{
 				cv::imwrite(  QString("%1/%2").arg(outdir).arg(fn).toStdString(), c );
-			else
+			}
+			
+			if( !csv.isEmpty() )
 			{
 				std::ofstream(csv.toStdString().c_str(),std::ofstream::out | std::ofstream::app)<<label<<","
 				 << format(c, "CSV") << "\n";
+			}
+
+			if( !lcsv.isEmpty() )
+			{
+				std::ofstream(lcsv.toStdString().c_str(),std::ofstream::out | std::ofstream::app)<<label<< "\n";
+			}
+
+			if( !dcsv.isEmpty() )
+			{
+				std::ofstream(dcsv.toStdString().c_str(),std::ofstream::out | std::ofstream::app)<< format(c, "CSV") << "\n";
 			}
 		}
 	}
