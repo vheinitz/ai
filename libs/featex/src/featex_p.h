@@ -8,7 +8,7 @@
 #include <QStringList>
 #include <QSharedPointer>
 #include <QVariant>
-//#include "features/feature.h"
+#include <cells.h>
 
 #include <QFuture>
 #include <QFutureWatcher>
@@ -51,11 +51,13 @@ public:
     FeatEx_p(QObject *parent = 0);
     ~FeatEx_p();
 
+	QList<QRect> rects(  std::string obj ); 
 	QList<double> extractObjectFeatures(  std::string obj, std::string featureSet, QVariant param = QVariant()  ); 
 	QStringList fnames( std::string featureSet, std::string prefix = std::string() );
 	void show(std::string img, bool pause=true);
 
 	std::string load( std::string fn, std::string obj ); ///Load from file, type is as defined in file
+	std::string loadGrey( std::string fn, std::string obj ); ///Load from file, type is grey
 	std::string crop( std::string src, int range, std::string dst );
 	std::string normalize( std::string src, int range,std::string dst );
 	std::string separateChannel( std::string src, int ch, std::string dst );

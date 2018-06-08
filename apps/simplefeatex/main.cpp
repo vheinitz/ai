@@ -168,14 +168,14 @@ int main(int argc, char** argv)
 					if ( !rowIdType.isEmpty() )
 					{
 						if( addSep )
-							*fs << ',';
+							*fs << ' ';
 						*fs<<"\""<<fn.c_str()<<"\"";
 						addSep=true;
 					}
 					if ( !classCol.isEmpty() )
 					{
 						if( addSep )
-							*fs << ',';
+							*fs << ' ';
 						*fs<<classCol;
 						addSep=true;
 					}
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
 					foreach (double e, res)
 					{
 						if( addSep )
-							*fs << ',';
+							*fs << ' ';
 
 						*fs << e;
 						addSep=true;

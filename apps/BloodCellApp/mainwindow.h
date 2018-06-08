@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <gui/imageview.h>
 #include <QSharedPointer>
+#include <QItemSelectionModel>
 
 
 class MouseMarker: public QObject, public ObjectSelectorInterface 
@@ -107,6 +108,8 @@ private:
 	QString _lastLoadedDir;
     QSharedPointer<ProjectManager> _project;
 	MouseMarker *_mouseMarker;
+	QItemSelectionModel *_classesSelection;
+	QItemSelectionModel *_modelImagesSelection;
 };
 
 

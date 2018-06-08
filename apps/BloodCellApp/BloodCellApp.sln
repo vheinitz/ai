@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "featex", "..\..\libs\featex\featex.vcproj", "{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055} = {DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0} = {BC07E3C4-ABDD-3870-B23B-3381D078CEE0}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cl2", "..\..\..\cl2.git\cl2.vcproj", "{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BloodCellApp", "BloodCellApp.vcproj", "{F45F5CBA-8403-3EA3-B4F9-243A1F48176D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055} = {DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0} = {BC07E3C4-ABDD-3870-B23B-3381D078CEE0}
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50} = {A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cells", "..\..\libs\cells\cells.vcproj", "{BC07E3C4-ABDD-3870-B23B-3381D078CEE0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055} = {DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Debug|Win32.Build.0 = Debug|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Release|Win32.ActiveCfg = Release|Win32
+		{A2147FD0-6FE0-33EA-99D3-D5586ACAFE50}.Release|Win32.Build.0 = Release|Win32
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Debug|Win32.Build.0 = Debug|Win32
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Release|Win32.ActiveCfg = Release|Win32
+		{DD8FBF03-6F4C-3C22-96EF-6BF1D675F055}.Release|Win32.Build.0 = Release|Win32
+		{F45F5CBA-8403-3EA3-B4F9-243A1F48176D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F45F5CBA-8403-3EA3-B4F9-243A1F48176D}.Debug|Win32.Build.0 = Debug|Win32
+		{F45F5CBA-8403-3EA3-B4F9-243A1F48176D}.Release|Win32.ActiveCfg = Release|Win32
+		{F45F5CBA-8403-3EA3-B4F9-243A1F48176D}.Release|Win32.Build.0 = Release|Win32
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0}.Debug|Win32.Build.0 = Debug|Win32
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0}.Release|Win32.ActiveCfg = Release|Win32
+		{BC07E3C4-ABDD-3870-B23B-3381D078CEE0}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

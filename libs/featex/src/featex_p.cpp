@@ -70,6 +70,9 @@ public:
 	}
 
 	std::map<std::string, cv::Mat> _imgdb;
+	std::map<std::string, TRectList> _rectsdb;
+
+	
 };
 
 FeatEx::FeatEx()
@@ -77,6 +80,16 @@ FeatEx::FeatEx()
 	_p  = QSharedPointer<FeatEx_p>( new FeatEx_p );
 }
 
+
+QList<QRect> FeatEx::rects(  std::string obj )
+{
+	QList<QRect> tmp;
+	foreach(  cv::Rect r, ObjectDb::inst()._rectsdb[obj] )
+	{
+		tmp << QRect(r.x,r.y,r.width, r.height);
+	}
+	return tmp;
+}
 
 QList<double> FeatEx::extractObjectFeatures(  std::string obj, std::string featureSet,QVariant param  )
 {
@@ -96,6 +109,11 @@ void FeatEx::show(std::string img, bool pause)
 std::string FeatEx::load( std::string fn, std::string obj )
 {
 	return _p->load(  fn,  obj );
+}
+
+std::string FeatEx::loadGrey( std::string fn, std::string obj )
+{
+	return _p->loadGrey(  fn,  obj );
 }
 
 std::string FeatEx::normalize( std::string src, int range, std::string dst )
@@ -127,10 +145,17 @@ std::string FeatEx::op( std::string op, std::string src, std::string param, std:
 }
 
 
+std::string FeatEx_p::loadGrey( std::string src, std::string dst )
+{
+	dst = dst.size()>0 ? dst: src;
+	ObjectDb::inst()._imgdb[dst] = cv::imread( src ,IMREAD_GRAYSCALE );
+	return dst;
+}
+
 std::string FeatEx_p::load( std::string src, std::string dst )
 {
 	dst = dst.size()>0 ? dst: src;
-	ObjectDb::inst()._imgdb[dst] = cv::imread( src,IMREAD_GRAYSCALE );
+	ObjectDb::inst()._imgdb[dst] = cv::imread( src );
 	return dst;
 }
 
@@ -193,6 +218,52 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		cv::normalize( m, n, 0, a, cv::NORM_MINMAX );
 		ObjectDb::inst()._imgdb[dst] = n;
 	}
+
+	else if (op == "backpj")
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int x = tmp.section(",",0,0).toInt(); 
+		int y = tmp.section(",",1,1).toInt();
+		int e = tmp.section(",",2,2).toInt();
+
+		Mat inp = ObjectDb::inst()._imgdb[src];
+		/// Transform it to HSV
+		Mat hsv, hue;
+
+		cvtColor( inp, hsv, CV_BGR2HSV );
+
+		/// Use only the Hue value
+		hue.create( hsv.size(), hsv.depth() );
+		int ch[] = { 0, 0 };
+		mixChannels( &hsv, 1, &hue, 1, ch, 1 );
+		
+		///
+		Mat hist;
+		int histSize = 255;
+		float hue_range[] = { 0, 180 };
+		const float* ranges = { hue_range };
+		Mat obj = hue(Rect( Point(x-e/2,y-e/2) ,Size(e,e)) );
+
+		/// Get the Histogram and normalize it
+		calcHist( &obj, 1, 0, Mat(), hist, 1, &histSize, &ranges, true, false );
+		cv::normalize( hist, hist, 0, 255, NORM_MINMAX, -1, Mat() );
+
+		/// Get Backprojection
+		Mat backproj;
+		calcBackProject( &hue, 1, 0, hist, backproj, &ranges, 1, true );
+
+		/// Draw the backproj
+		//cv::rectangle( backproj,Rect( Point(bins,bins+30) ,Size(rs,rs)),cv::Scalar(255,0,0), 1 );
+		//imshow( "BackProj", backproj );
+
+		/// Show the image
+		imshow( "pbpj", backproj );
+
+		/// Wait until user exits the program
+		waitKey(1);
+		ObjectDb::inst()._imgdb[dst] = backproj;
+	}
 	else if ( op == "sobel" )
 	{
 		cv::Mat m = ObjectDb::inst()._imgdb[src];
@@ -202,6 +273,69 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		cv::Mat sob;
    		cv::Sobel( m, sob, CV_32F, x, y );
 		ObjectDb::inst()._imgdb[dst] = sob;
+	}
+	else if ( op == "dist" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int d = tmp.toInt(); 
+		cv::Mat out;
+   		distanceTransform(m, out, CV_DIST_L2, d);
+		ObjectDb::inst()._imgdb[dst] = out;
+	}
+	else if ( op == "binth" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int from = tmp.section(",",0,0).toInt(); 
+		int to = tmp.section(",",1,1).toInt(); 
+		cv::Mat out;
+		threshold(m, out, from, to, CV_THRESH_BINARY_INV );
+		ObjectDb::inst()._imgdb[dst] = out;
+	}
+	else if ( op == "add" )
+	{
+		try{
+		cv::Mat m1;
+		ObjectDb::inst()._imgdb[src].convertTo(m1, CV_32FC1);
+		cv::Mat m2;
+		ObjectDb::inst()._imgdb[param].convertTo(m2, CV_32FC1);
+
+		cv::Mat sum;// = Mat(m.size(), CV_32F);
+		if ( m2.size().area() == 0 )
+		{
+			m1.copyTo( sum );
+		}
+		else if ( m1.size().area() == 0 )
+		{
+			m2.copyTo( sum );
+		}
+		else
+		{
+			cv::add(m1*0.3,m2*0.7,sum);
+		}
+
+		cv::normalize(sum,sum,0, 255, NORM_MINMAX);
+		cv::imshow( "SUM", sum );
+		cv::waitKey(1);
+		ObjectDb::inst()._imgdb[dst] = sum;
+		}
+		catch(...){}
+	}
+	else if ( op == "canny" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int min = tmp.section(",",0,0).toInt(); 
+		int max = tmp.section(",",1,1).toInt(); 
+		int k = tmp.section(",",2,2).toInt(); 
+		cv::Mat out;
+		/// Canny detector
+		cv::blur( m, out, Size(3,3) );
+		cv::Canny( out, out, min, max, k );
+		cv::imshow("canny", out );
+ 		cv::waitKey(1);
+		ObjectDb::inst()._imgdb[dst] = out;
 	}
 	else if ( op == "resize" )
 	{
@@ -266,7 +400,133 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		cv::imshow("img", img );
 		cv::imshow("mag", mag );
 		cv::imshow("angle", angle );
- 		cv::waitKey(0);
+ 		cv::waitKey(1);
+	}
+	else if(op == "cells")
+	{
+		cv::Mat img = ObjectDb::inst()._imgdb[src]; 
+		QString tmp(param.c_str());
+		int cmin = tmp.section(",",0,0).toInt(); // Index of tile
+		int cmax = tmp.section(",",1,1).toInt(); // Index of tile
+		int thmin = tmp.section(",",2,2).toInt();
+		int thmax = tmp.section(",",3,3).toInt();
+		int lev =   tmp.section(",",4,4).toInt();
+ 		
+		CellExtractor ce( cmin, cmax, thmin, thmax, lev );
+		TRotatedRectList rrects = ce.findCellRects(img);
+		TRectList brects;
+
+		cv::Mat show = img.clone();
+
+		foreach( cv::RotatedRect r, rrects )
+		{
+			cv::rectangle(show, r.boundingRect(),cv::Scalar(0,0,0),2);
+			brects.push_back( r.boundingRect() );
+		}
+
+
+		//cv::imshow( "Cells_dbg", show );
+		//cv::waitKey(1);
+
+		ObjectDb::inst()._rectsdb[dst] = brects;
+	}
+	else if(op == "seg")
+	{
+			cv::Mat img = ObjectDb::inst()._imgdb[src];
+		    // Show source image
+			imshow("Source Image", img);
+			
+			// Show output image
+			imshow("Black Background Image", img);
+			// Create a kernel that we will use for accuting/sharpening our image
+			Mat kernel = (Mat_<float>(3,3) <<
+					1,  1, 1,
+					1, -8, 1,
+					1,  1, 1); // an approximation of second derivative, a quite strong kernel
+			// do the laplacian filtering as it is
+			// well, we need to convert everything in something more deeper then CV_8U
+			// because the kernel has some negative values,
+			// and we can expect in general to have a Laplacian image with negative values
+			// BUT a 8bits unsigned int (the one we are working with) can contain values from 0 to 255
+			// so the possible negative number will be truncated
+			Mat imgLaplacian;
+			Mat sharp = img; // copy source image to another temporary one
+			filter2D(sharp, imgLaplacian, CV_32F, kernel);
+			img.convertTo(sharp, CV_32F);
+			Mat imgResult = sharp - imgLaplacian;
+			// convert back to 8bits gray scale
+			imgResult.convertTo(imgResult, CV_8UC3);
+			imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
+			// imshow( "Laplace Filtered Image", imgLaplacian );
+			imshow( "New Sharped Image", imgResult );
+			img = imgResult; // copy back
+			// Create binary image from source image
+			Mat bw;
+			cvtColor(img, bw, CV_BGR2GRAY);
+			threshold(bw, bw, 40, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+			imshow("Binary Image", bw);
+			// Perform the distance transform algorithm
+			Mat dist;
+			distanceTransform(bw, dist, CV_DIST_L2, 3);
+			// Normalize the distance image for range = {0.0, 1.0}
+			// so we can visualize and threshold it
+			cv::normalize(dist, dist, 0, 1., NORM_MINMAX);
+			imshow("Distance Transform Image", dist);
+			// Threshold to obtain the peaks
+			// This will be the markers for the foreground objects
+			threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
+			// Dilate a bit the dist image
+			Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
+			dilate(dist, dist, kernel1);
+			imshow("Peaks", dist);
+			// Create the CV_8U version of the distance image
+			// It is needed for findContours()
+			Mat dist_8u;
+			dist.convertTo(dist_8u, CV_8U);
+			// Find total markers
+			vector<vector<Point> > contours;
+			findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+			// Create the marker image for the watershed algorithm
+			Mat markers = Mat::zeros(dist.size(), CV_32SC1);
+			// Draw the foreground markers
+			for (size_t i = 0; i < contours.size(); i++)
+				drawContours(markers, contours, static_cast<int>(i), Scalar::all(static_cast<int>(i)+1), -1);
+			// Draw the background marker
+			circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
+			imshow("Markers", markers*10000);
+			// Perform the watershed algorithm
+			watershed(img, markers);
+			Mat mark = Mat::zeros(markers.size(), CV_8UC1);
+			markers.convertTo(mark, CV_8UC1);
+			bitwise_not(mark, mark);
+		//    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+										  // image looks like at that point
+			// Generate random colors
+			vector<Vec3b> colors;
+			for (size_t i = 0; i < contours.size(); i++)
+			{
+				int b = theRNG().uniform(0, 255);
+				int g = theRNG().uniform(0, 255);
+				int r = theRNG().uniform(0, 255);
+				colors.push_back(Vec3b((uchar)b, (uchar)g, (uchar)r));
+			}
+			// Create the result image
+			Mat out = Mat::zeros(markers.size(), CV_8UC3);
+			// Fill labeled objects with random colors
+			for (int i = 0; i < markers.rows; i++)
+			{
+				for (int j = 0; j < markers.cols; j++)
+				{
+					int index = markers.at<int>(i,j);
+					if (index > 0 && index <= static_cast<int>(contours.size()))
+						out.at<Vec3b>(i,j) = colors[index-1];
+					else
+						out.at<Vec3b>(i,j) = Vec3b(0,0,0);
+				}
+			}
+			// Visualize the final image
+			imshow("Final Result", out);
+			ObjectDb::inst()._imgdb[dst] = out;
 	}
 	
 	return dst;
@@ -336,7 +596,7 @@ QStringList FeatEx_p::fnames( std::string featureSet, std::string pfx )
 void FeatEx_p::show( std::string img, bool pause )
 {
 	//TODO check exist      
-	cv::imshow( "Image", ObjectDb::inst()._imgdb[img] );
+	cv::imshow( img, ObjectDb::inst()._imgdb[img] );
 	cv::waitKey(pause?0:1);
 }
 

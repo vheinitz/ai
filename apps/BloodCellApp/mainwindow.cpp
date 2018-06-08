@@ -144,9 +144,13 @@ void MainWindow::checkCellMarker( )
 					{
 						QPixmap icon = QPixmap (_currentImage).copy( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y() );
 
-
+						if ( !_classesSelection->selection().isEmpty() )
+						{
+							QModelIndex ix = _classesSelection->selectedIndexes().first();
+							_project->setClassIcon( ix.data().toString() ,icon );
+						}
 					}
-					_cellMarkers << _curCellMarker;
+
 
 					if(_project)_project->addImage( _currentImage );
 				}
@@ -406,6 +410,8 @@ void MainWindow::openProject( QString fn )
 	ui->lvModelImages->setModel( &_project->_modelImages );
 
 	ui->tvClasses->setModel( &_project->_classes );
+	_classesSelection = new QItemSelectionModel( &_project->_classes );
+	ui->tvClasses->setSelectionModel( _classesSelection );
 	
 	savePersistence();
 }

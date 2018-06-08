@@ -9,8 +9,7 @@ DESTDIR = ../../../build
 DEPENDPATH += .
 INCLUDEPATH += .
 
-INCLUDEPATH += .\
-  C:/Development/ai/libs/cells \
+INCLUDEPATH += C:/Development/ai/libs/cells 
   
 #TODO pipl in cells, hide opencv
 INCLUDEPATH += . \

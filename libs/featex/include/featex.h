@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <QVariant>
+#include <QRect>
 
 
 class FeatEx_p;
@@ -27,12 +28,15 @@ public:
     FeatEx();
 
 	std::string load( std::string fn, std::string obj=std::string() ); ///Load from file, type is as defined in file
+	std::string loadGrey( std::string fn, std::string obj=std::string() ); ///Load from file, type is rey
 	std::string normalize( std::string src, int range, std::string dst=std::string() );
 	std::string crop( std::string src, int range, std::string dst );
 	std::string separateChannel( std::string src, int ch, std::string dst=std::string() );
 	std::string blur( std::string src, int dotsize, std::string dst=std::string() );
 	std::string op( std::string op, std::string src, std::string param=std::string(), std::string dst=std::string() );
-	QList<double> extractObjectFeatures(  std::string obj, std::string featureSet, QVariant param = QVariant() ); 
+	QList<double> extractObjectFeatures(  std::string obj, std::string featureSet, QVariant param = QVariant() );
+
+	QList<QRect> rects(  std::string obj ); 
 	QStringList fnames( std::string featureSet, std::string prefix=std::string() );
 	void show(std::string img, bool pause=true);
 	
