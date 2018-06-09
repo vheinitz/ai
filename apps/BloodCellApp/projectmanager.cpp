@@ -104,6 +104,21 @@ void ProjectManager::addImage( QString fn)
 		_modelImages.appendRow(QList<QStandardItem*>() << new QStandardItem( QIcon(QPixmap(_imgdb.getThumbnailPath(hash))),hash ));
 }
 
+void ProjectManager::addObject( QString c, QString imghash, QPolygon r )
+{
+	static int uid = 0;
+	ImageObject obj;
+	obj._class = c;
+	obj._imghash = imghash;
+	obj._region = r;
+	obj._uid = ++uid;
+
+	_objects << obj;
+}
+
+
+void ;
+
 void ProjectManager::create( QString dir, QString fn)
 {
 	_dir = dir;

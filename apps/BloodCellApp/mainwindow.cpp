@@ -119,6 +119,15 @@ void MainWindow::checkMarker( )
 
 void MainWindow::checkCellMarker( )
 {
+	QString currentClass;
+	if ( !_classesSelection->selection().isEmpty() )
+	{
+		QModelIndex ix = _classesSelection->selectedIndexes().first();
+		currentClass = ix.data().toString();
+	}
+	else
+		return; // no class selected
+
 	MouseMarker *m = qobject_cast<MouseMarker*>( sender() );
 	if(m)
 	{
@@ -143,16 +152,16 @@ void MainWindow::checkCellMarker( )
 					if ( ui->bGetIon->isChecked() )
 					{
 						QPixmap icon = QPixmap (_currentImage).copy( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y() );
-
-						if ( !_classesSelection->selection().isEmpty() )
-						{
-							QModelIndex ix = _classesSelection->selectedIndexes().first();
-							_project->setClassIcon( ix.data().toString() ,icon );
-						}
+						_project->setClassIcon( currentClass ,icon );
 					}
 
 
-					if(_project)_project->addImage( _currentImage );
+					if(_project)
+					{
+						_project->addImage( _currentImage );
+						_project->addObject( currentClass, _currentImage, QPolygon( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y())));
+					}
+
 				}
 				break;
 			case MouseMarker::Moved:
@@ -344,28 +353,6 @@ void MainWindow::on_cbConfigType_currentIndexChanged(int index)
     ui->swConfigData->setCurrentIndex(index);
 }
 
-void MainWindow::on_bMarkRBC_clicked(bool checked)
-{
-	if( checked )
-	{
-		connect( _mouseMarker , SIGNAL(check()), this , SLOT( checkMarker(  ) ) );
-	}
-	else
-	{
-		disconnect( _mouseMarker, SIGNAL(check()), this , SLOT( checkMarker(  ) ) );
-		foreach ( QGraphicsLineItem* m, _lineMarkers) _imageScene->removeItem(m);
-	}
-}
-
-void MainWindow::on_bSaveRBCConfig_clicked()
-{
-
-}
-
-void MainWindow::on_bResetRBCConfig_clicked()
-{
-
-}
 
 void MainWindow::on_tabWidget_currentChanged(int index)
 {

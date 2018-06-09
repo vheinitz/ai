@@ -62,12 +62,6 @@ private slots:
 
     void on_cbConfigType_currentIndexChanged(int index);
 
-    void on_bMarkRBC_clicked(bool checked);
-
-    void on_bSaveRBCConfig_clicked();
-
-    void on_bResetRBCConfig_clicked();
-
     void on_tabWidget_currentChanged(int index);
 
     void on_actionOpen_Project_triggered();
