@@ -15,6 +15,8 @@ struct ImageObject
 	int _uid;
 };
 
+enum ClassColums{ CCIcon=0, CCColor, CCName };
+
 class ProjectManager
 {
 public:
@@ -28,8 +30,10 @@ public:
 	void addClass( QString c );
 	QModelIndex classIndex( QString c );
 	QModelIndex classColorIndex( QString c );
+	QColor classColor( QString c );
 	QModelIndex classIconIndex( QString c );
 	void setClassIcon( QString c, QPixmap icon );
+	void setClassColor( QString c, QColor col );
 	void addObject( QString c, QString imghash, QPolygon r );
 	void create( QString dir, QString fn);
 	void addImage( QString fn );

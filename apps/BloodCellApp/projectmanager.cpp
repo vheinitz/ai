@@ -50,7 +50,7 @@ void ProjectManager::load( QString fn)
 			if( items.size()>3 )
 			{
 				QColor p(items.at(3));
-				//setClassColor( items.at(1),items.at(3) );
+				setClassColor( items.at(1),items.at(3) );
 			}
 		}
 
@@ -65,9 +65,9 @@ void ProjectManager::save( )
 {
 	QStringList data;
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex cindex = _classes.index(r, 2);
-		QModelIndex iindex = _classes.index(r, 0);
-		QModelIndex index = _classes.index(r, 1);
+        QModelIndex cindex = _classes.index(r, CCColor);
+		QModelIndex iindex = _classes.index(r, CCIcon);
+		QModelIndex index = _classes.index(r, CCName);
 		data << QString ("CLASS;%1;%2;%3")
 			.arg(_classes.data(index).toString())
 			.arg(_classes.data(iindex,ProjectManager::ClassIconFile).toString())
@@ -82,7 +82,7 @@ QModelIndex ProjectManager::classIndex( QString c )
 {
 	QModelIndex index = _classes.index(-1, -1);
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex tmp = _classes.index(r, 1);
+        QModelIndex tmp = _classes.index(r, CCName);
         if ( _classes.data(tmp).toString() == c)
 		{
 			index = tmp;
@@ -97,10 +97,10 @@ QModelIndex ProjectManager::classColorIndex( QString c )
 {
 	QModelIndex index = _classes.index(-1, -1);
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex tmp = _classes.index(r, 1);
+        QModelIndex tmp = _classes.index(r, CCName);
         if ( _classes.data(tmp).toString() == c)
 		{
-			index = _classes.index(r, 2);
+			index = _classes.index(r, CCColor);
 			break;
 		}
     }
@@ -108,14 +108,32 @@ QModelIndex ProjectManager::classColorIndex( QString c )
 	return index;
 }
 
+QColor ProjectManager::classColor( QString c )
+{
+	QModelIndex index = _classes.index(-1, -1);
+	for(int r = 0; r < _classes.rowCount(); ++r) {
+        QModelIndex tmp = _classes.index(r, CCName);
+        if ( _classes.data(tmp).toString() == c)
+		{
+			index = _classes.index(r,CCColor);
+			break;
+		}
+    }
+
+	if (index.isValid())
+		return QColor( index.data(Qt::DecorationRole).toString() );
+	return
+		QColor();
+}
+
 QModelIndex ProjectManager::classIconIndex( QString c )
 {
 	QModelIndex index = _classes.index(-1, -1);
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex tmp = _classes.index(r, 1);
+        QModelIndex tmp = _classes.index(r, CCName);
         if ( _classes.data(tmp).toString() == c)
 		{
-			index = _classes.index(r, 0);
+			index = _classes.index(r, CCIcon);
 			break;
 		}
     }
@@ -135,8 +153,8 @@ void ProjectManager::addClass( QString c )
 
 	_classes.appendRow(QList<QStandardItem*>() 
 		<< new QStandardItem(  )
-		<< new QStandardItem( c )
 		<< col
+		<< new QStandardItem( c )		
 		 );
 }
 
@@ -151,6 +169,15 @@ void ProjectManager::setClassIcon( QString c, QPixmap icon )
 	_classes.setData(index,icon,Qt::DecorationRole);
 	_classes.setData(index,iconpath,ProjectManager::ClassIconFile);
 }
+
+void ProjectManager::setClassColor( QString c, QColor col )
+{
+	QModelIndex index = classColorIndex( c );
+	if ( !index.isValid() )
+		return;
+	_classes.setData(index,col,Qt::DecorationRole);
+}
+
 
 void ProjectManager::addImage( QString fn)
 {

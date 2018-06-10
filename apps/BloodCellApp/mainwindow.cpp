@@ -12,6 +12,7 @@
 #include "projectmanager.h"
 #include <QSharedPointer>
 #include <QInputDialog>
+#include <QColorDialog>
 
 
 class ProjectManager;
@@ -122,7 +123,7 @@ QString MainWindow::currentClass( )
 	if ( _classesSelection->selectedRows().size()==1 )
 	{
 		QModelIndex ix = _classesSelection->selectedRows().first();
-		ix = _classesSelection->model()->index( ix.row(), 1 );
+		ix = _classesSelection->model()->index( ix.row(), CCName );
 		c = ix.data().toString();
 	}
 	
@@ -135,7 +136,7 @@ QColor MainWindow::currentClassCol( )
 	if ( _classesSelection->selectedRows().size()==1 )
 	{
 		QModelIndex ix = _classesSelection->selectedRows().first();
-		ix = _classesSelection->model()->index( ix.row(), 2 );
+		ix = _classesSelection->model()->index( ix.row(), CCColor );
 		c = ix.data(Qt::DecorationRole).toString();
 	}
 	
@@ -168,7 +169,7 @@ void MainWindow::checkCellMarker( )
 					}
 					else
 					{
-						_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),0,0,QPen(currentClassCol()) );
+						//_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),0,0,QPen(currentClassCol()) );
 					}
 				}
 				break;
@@ -192,7 +193,7 @@ void MainWindow::checkCellMarker( )
 			case MouseMarker::Moved:
 				{
 					_imageScene->removeItem( _curCellMarker);
-					_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y(),QPen(QColor("red")) );
+					_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y(),QPen(currentClassCol()) );
 					
 				}
 				break;
@@ -424,6 +425,8 @@ void MainWindow::openProject( QString fn )
 	ui->lvModelImages->setSelectionModel( _modelImagesSelection );
 
 	ui->tvClasses->setModel( &_project->_classes );
+	ui->tvClasses->setColumnWidth( CCIcon, ui->tvClasses->iconSize().width() );
+	ui->tvClasses->setColumnWidth( CCColor, 25 );
 	_classesSelection = new QItemSelectionModel( &_project->_classes );
 	ui->tvClasses->setSelectionModel( _classesSelection );
 	
@@ -521,9 +524,19 @@ void MainWindow::updateRegions()
 		if( i._imghash == currentImage )
 		{
 			if ( currentClass.isEmpty() )
-				_curCellMarker=_imageScene->addPolygon(i._region,QPen(QColor("red")) );
+				_curCellMarker=_imageScene->addPolygon(i._region,QPen(_project->classColor( i._class )) );
 			else if ( currentClass == i._class )
-				_curCellMarker=_imageScene->addPolygon(i._region,QPen(QColor("red")) );
+				_curCellMarker=_imageScene->addPolygon(i._region,QPen(_project->classColor( i._class )) );
 		}
+	}
+}
+
+void MainWindow::on_tvClasses_doubleClicked(const QModelIndex &index)
+{
+	if ( index.column( ) == CCColor ) //color
+	{
+		QString c = index.model()->index(index.row(), CCName).data().toString(); 
+		QColor col = QColorDialog::getColor( QColor(index.data(Qt::DecorationRole).toString()), this, tr("Select color") );
+		_project->setClassColor( c, col );
 	}
 }

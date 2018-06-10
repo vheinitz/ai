@@ -93,6 +93,8 @@ private slots:
 
 	void updateRegions();
 
+    void on_tvClasses_doubleClicked(const QModelIndex &index);
+
 private:
     Ui::MainWindow *ui;
 
