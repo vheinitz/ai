@@ -27,6 +27,8 @@ public:
 	void save( );
 	void addClass( QString c );
 	QModelIndex classIndex( QString c );
+	QModelIndex classColorIndex( QString c );
+	QModelIndex classIconIndex( QString c );
 	void setClassIcon( QString c, QPixmap icon );
 	void addObject( QString c, QString imghash, QPolygon r );
 	void create( QString dir, QString fn);

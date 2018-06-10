@@ -116,17 +116,37 @@ void MainWindow::checkMarker( )
 	}
 }
 
+QString MainWindow::currentClass( )
+{
+	QString c;
+	if ( _classesSelection->selectedRows().size()==1 )
+	{
+		QModelIndex ix = _classesSelection->selectedRows().first();
+		ix = _classesSelection->model()->index( ix.row(), 1 );
+		c = ix.data().toString();
+	}
+	
+	return c;
+}
+
+QColor MainWindow::currentClassCol( )
+{
+	QColor c;
+	if ( _classesSelection->selectedRows().size()==1 )
+	{
+		QModelIndex ix = _classesSelection->selectedRows().first();
+		ix = _classesSelection->model()->index( ix.row(), 2 );
+		c = ix.data(Qt::DecorationRole).toString();
+	}
+	
+	return c;
+}
 
 void MainWindow::checkCellMarker( )
 {
-	QString currentClass;
-	if ( !_classesSelection->selection().isEmpty() )
-	{
-		QModelIndex ix = _classesSelection->selectedIndexes().first();
-		currentClass = ix.data().toString();
-	}
-	else
-		return; // no class selected
+	QString c = currentClass( );
+	if ( c.isEmpty() )
+		return;
 
 	MouseMarker *m = qobject_cast<MouseMarker*>( sender() );
 	if(m)
@@ -135,15 +155,20 @@ void MainWindow::checkCellMarker( )
 		{
 			case MouseMarker::Pressed:
 				{
-					if ( ui->bREmoveObjects->isChecked() )
+					if ( ui->bGetIon->isChecked() )
 					{
-						foreach ( QGraphicsRectItem* r, _cellMarkers)
+						foreach ( QGraphicsItem* r, _cellMarkers)
+							_imageScene->removeItem(r);
+					}
+					else if ( ui->bREmoveObjects->isChecked()  )
+					{
+						foreach ( QGraphicsItem* r, _cellMarkers)
 							if( r->contains(m->p1) )
 								_imageScene->removeItem(r);
 					}
 					else
 					{
-						_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),0,0,QPen(QColor("red")) );
+						_curCellMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),0,0,QPen(currentClassCol()) );
 					}
 				}
 				break;
@@ -152,14 +177,14 @@ void MainWindow::checkCellMarker( )
 					if ( ui->bGetIon->isChecked() )
 					{
 						QPixmap icon = QPixmap (_currentImage).copy( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y() );
-						_project->setClassIcon( currentClass ,icon );
+						_project->setClassIcon( c ,icon );
 					}
 
 
 					if(_project)
 					{
 						_project->addImage( _currentImage );
-						_project->addObject( currentClass, _currentImage, QPolygon( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y())));
+						_project->addObject( c, _currentImage, QPolygon( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y())));
 					}
 
 				}
@@ -395,6 +420,8 @@ void MainWindow::openProject( QString fn )
 	_currentProjectPath = fn;
 
 	ui->lvModelImages->setModel( &_project->_modelImages );
+	_modelImagesSelection = new QItemSelectionModel( &_project->_modelImages );
+	ui->lvModelImages->setSelectionModel( _modelImagesSelection );
 
 	ui->tvClasses->setModel( &_project->_classes );
 	_classesSelection = new QItemSelectionModel( &_project->_classes );
@@ -431,6 +458,8 @@ void MainWindow::on_lvModelImages_clicked(const QModelIndex &index)
 
 	if( ui->tabWidget->currentIndex() == 0 )
 		;//analyse();
+
+	updateRegions();
 }
 
 void MainWindow::on_lvModelImages_activated(const QModelIndex &index)
@@ -460,5 +489,41 @@ void MainWindow::on_bREmoveObjects_clicked(bool checked)
 	else
 	{
 		disconnect( _mouseMarker, SIGNAL(check()), this , SLOT( checkCellMarker(  ) ) );
+	}
+}
+
+void MainWindow::on_tvClasses_clicked(const QModelIndex &index)
+{
+	updateRegions();
+}
+
+void MainWindow::updateRegions()
+{
+	QString currentClass;
+	if ( _classesSelection->selection().size()==1 )
+	{
+		QModelIndex ix = _classesSelection->selectedIndexes().first();
+		currentClass = ix.data().toString();
+	}
+
+
+	QString currentImage;
+	if ( _modelImagesSelection->selection().size()==1 )
+	{
+		QModelIndex ix = _modelImagesSelection->selectedIndexes().first();
+		currentImage = ix.data().toString();
+	}
+	else
+		return; // no class selected
+
+	foreach( ImageObject i, _project->_objects )
+	{
+		if( i._imghash == currentImage )
+		{
+			if ( currentClass.isEmpty() )
+				_curCellMarker=_imageScene->addPolygon(i._region,QPen(QColor("red")) );
+			else if ( currentClass == i._class )
+				_curCellMarker=_imageScene->addPolygon(i._region,QPen(QColor("red")) );
+		}
 	}
 }

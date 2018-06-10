@@ -39,6 +39,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private:
+	QString currentClass( );
+	QColor currentClassCol( );
+
 private slots:
 	void checkMarker(  );
 	void checkCellMarker(  );
@@ -85,6 +89,10 @@ private slots:
 
     void on_bREmoveObjects_clicked(bool checked);
 
+    void on_tvClasses_clicked(const QModelIndex &index);
+
+	void updateRegions();
+
 private:
     Ui::MainWindow *ui;
 
@@ -92,11 +100,11 @@ private:
     QStandardItemModel _atlasCells;
 	ImageScene *_imageScene;
 	QList<double> _meanRbcDiam;
-	QList<QGraphicsLineItem*> _lineMarkers;
-	QList<QGraphicsRectItem*> _rectMarkers;
-	QList<QGraphicsRectItem*> _cellMarkers;
+	QList<QGraphicsItem*> _lineMarkers;
+	QList<QGraphicsItem*> _rectMarkers;
+	QList<QGraphicsItem*> _cellMarkers;
 	QGraphicsLineItem* _curLineMarker;
-	QGraphicsRectItem* _curCellMarker;
+	QGraphicsItem* _curCellMarker;
 	QString _currentProjectPath;
 	QString _currentImage;
 	QString _lastLoadedDir;

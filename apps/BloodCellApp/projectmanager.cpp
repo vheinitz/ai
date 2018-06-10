@@ -13,6 +13,16 @@ ProjectManager::~ProjectManager( )
     if (!_fn.isEmpty()) save();
 }
 
+QColor randomColor()
+{
+    int red = int(185 + 70.0*qrand()/(RAND_MAX+1.0));
+    int green = int(185 + 70.0*qrand()/(RAND_MAX+1.0));
+    int blue = int(205 + 50.0*qrand()/(RAND_MAX+1.0));
+    //int alpha = int(91 + 100.0*qrand()/(RAND_MAX+1.0));
+
+    return QColor(red, green, blue, 255);
+}
+
 void ProjectManager::load( QString fn)
 {
 	_dir = QFileInfo(fn).canonicalPath();
@@ -37,6 +47,11 @@ void ProjectManager::load( QString fn)
 				QPixmap p = QPixmap(items.at(2));
 				setClassIcon( items.at(1),items.at(2) );
 			}
+			if( items.size()>3 )
+			{
+				QColor p(items.at(3));
+				//setClassColor( items.at(1),items.at(3) );
+			}
 		}
 
 
@@ -50,8 +65,13 @@ void ProjectManager::save( )
 {
 	QStringList data;
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex index = _classes.index(r, 0);
-		data << QString ("CLASS;%1;%2").arg(_classes.data(index).toString()).arg(_classes.data(index,ProjectManager::ClassIconFile).toString());
+        QModelIndex cindex = _classes.index(r, 2);
+		QModelIndex iindex = _classes.index(r, 0);
+		QModelIndex index = _classes.index(r, 1);
+		data << QString ("CLASS;%1;%2;%3")
+			.arg(_classes.data(index).toString())
+			.arg(_classes.data(iindex,ProjectManager::ClassIconFile).toString())
+			.arg(_classes.data(cindex,Qt::DecorationRole).toString());
     }
 
 	FSTools::toFile( data, _dir+"/"+_fn );
@@ -62,7 +82,7 @@ QModelIndex ProjectManager::classIndex( QString c )
 {
 	QModelIndex index = _classes.index(-1, -1);
 	for(int r = 0; r < _classes.rowCount(); ++r) {
-        QModelIndex tmp = _classes.index(r, 0);
+        QModelIndex tmp = _classes.index(r, 1);
         if ( _classes.data(tmp).toString() == c)
 		{
 			index = tmp;
@@ -73,6 +93,35 @@ QModelIndex ProjectManager::classIndex( QString c )
 	return index;
 }
 
+QModelIndex ProjectManager::classColorIndex( QString c )
+{
+	QModelIndex index = _classes.index(-1, -1);
+	for(int r = 0; r < _classes.rowCount(); ++r) {
+        QModelIndex tmp = _classes.index(r, 1);
+        if ( _classes.data(tmp).toString() == c)
+		{
+			index = _classes.index(r, 2);
+			break;
+		}
+    }
+
+	return index;
+}
+
+QModelIndex ProjectManager::classIconIndex( QString c )
+{
+	QModelIndex index = _classes.index(-1, -1);
+	for(int r = 0; r < _classes.rowCount(); ++r) {
+        QModelIndex tmp = _classes.index(r, 1);
+        if ( _classes.data(tmp).toString() == c)
+		{
+			index = _classes.index(r, 0);
+			break;
+		}
+    }
+
+	return index;
+}
  
 
 void ProjectManager::addClass( QString c )
@@ -81,12 +130,19 @@ void ProjectManager::addClass( QString c )
 	if ( index.isValid() )
 		return;
 
-	_classes.appendRow(QList<QStandardItem*>() << new QStandardItem( c ) );
+	QStandardItem *col = new QStandardItem( "   " );
+	col->setData( randomColor(), Qt::DecorationRole );
+
+	_classes.appendRow(QList<QStandardItem*>() 
+		<< new QStandardItem(  )
+		<< new QStandardItem( c )
+		<< col
+		 );
 }
 
 void ProjectManager::setClassIcon( QString c, QPixmap icon )
 {
-	QModelIndex index = classIndex( c );
+	QModelIndex index = classIconIndex( c );
 	if ( !index.isValid() )
 		return;
 	QString iconhash = FSTools::getHash( icon );

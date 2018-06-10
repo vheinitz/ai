@@ -343,7 +343,14 @@
                <widget class="QWidget" name="pClasses">
                 <layout class="QHBoxLayout" name="horizontalLayout_7">
                  <item>
-                  <widget class="QTableView" name="tvClasses"/>
+                  <widget class="QTableView" name="tvClasses">
+                   <property name="selectionMode">
+                    <enum>QAbstractItemView::SingleSelection</enum>
+                   </property>
+                   <property name="selectionBehavior">
+                    <enum>QAbstractItemView::SelectRows</enum>
+                   </property>
+                  </widget>
                  </item>
                  <item>
                   <layout class="QVBoxLayout" name="verticalLayout_7">
