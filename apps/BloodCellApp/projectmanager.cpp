@@ -54,6 +54,24 @@ void ProjectManager::load( QString fn)
 			}
 		}
 
+		else if( items.at(0).trimmed() == "OBJECT" )
+		{
+			ImageObject i;
+			i._class = items.at(1);
+			i._imghash = items.at(2);
+			QVector<QPoint> points;
+			foreach( QString p, items.at(3).split(",") )
+			{
+				QStringList xy = p.split(" ");
+				if (xy.size() != 2)
+					continue;
+
+				points << QPoint( xy.at(0).toInt(), xy.at(1).toInt() );
+			}
+			i._region = QPolygon( points );
+			_objects << i;
+		}
+
 
         
     }
@@ -72,6 +90,20 @@ void ProjectManager::save( )
 			.arg(_classes.data(index).toString())
 			.arg(_classes.data(iindex,ProjectManager::ClassIconFile).toString())
 			.arg(_classes.data(cindex,Qt::DecorationRole).toString());
+    }
+
+	foreach(ImageObject i, _objects) {
+  
+		QStringList reg;
+		foreach( QPoint p, i._region.toList() )
+		{
+			reg << QString( "%1 %2" ).arg(p.x()).arg(p.y());
+		}
+
+		data << QString ("OBJECT;%1;%2;%3")
+			.arg(i._class)
+			.arg(i._imghash)
+			.arg(reg.join(","));
     }
 
 	FSTools::toFile( data, _dir+"/"+_fn );
@@ -166,7 +198,7 @@ void ProjectManager::setClassIcon( QString c, QPixmap icon )
 	QString iconhash = FSTools::getHash( icon );
 	QString iconpath = _dir+"/icons/"+iconhash+".png";
 	bool ok = icon.save(iconpath);
-	_classes.setData(index,icon,Qt::DecorationRole);
+	_classes.setData(index,icon.scaled( 50,50 ),Qt::DecorationRole);
 	_classes.setData(index,iconpath,ProjectManager::ClassIconFile);
 }
 
@@ -179,12 +211,14 @@ void ProjectManager::setClassColor( QString c, QColor col )
 }
 
 
-void ProjectManager::addImage( QString fn)
+QString ProjectManager::addImage( QString fn)
 {
 	bool existed;
 	QString hash = _imgdb.addImage( fn, &existed );
 	if(!existed)
 		_modelImages.appendRow(QList<QStandardItem*>() << new QStandardItem( QIcon(QPixmap(_imgdb.getThumbnailPath(hash))),hash ));
+
+	return hash;
 }
 
 void ProjectManager::addObject( QString c, QString imghash, QPolygon r )
@@ -199,8 +233,19 @@ void ProjectManager::addObject( QString c, QString imghash, QPolygon r )
 	_objects << obj;
 }
 
+void ProjectManager::removeAt( QString c, QString imghash, QPoint p )
+{
+	
+	for( int i = 0; i<_objects.size(); i++ )
+	{
+		ImageObject o = _objects.at(i);
+		if( o._class == c && o._imghash == imghash && o._region.boundingRect().contains(p) )
+		{
+			_objects.removeAt(i);
+		}
+	}
+}
 
-void ;
 
 void ProjectManager::create( QString dir, QString fn)
 {

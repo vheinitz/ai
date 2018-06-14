@@ -35,8 +35,9 @@ public:
 	void setClassIcon( QString c, QPixmap icon );
 	void setClassColor( QString c, QColor col );
 	void addObject( QString c, QString imghash, QPolygon r );
+	void removeAt( QString c, QString imghash, QPoint p );
 	void create( QString dir, QString fn);
-	void addImage( QString fn );
+	QString addImage( QString fn );
 	ImageDatabase _imgdb;
 	QStandardItemModel _classes;
 	QStandardItemModel _modelImages;

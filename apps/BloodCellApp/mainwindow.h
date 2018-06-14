@@ -6,6 +6,7 @@
 #include <gui/imageview.h>
 #include <QSharedPointer>
 #include <QItemSelectionModel>
+#include <Qt>
 
 
 class MouseMarker: public QObject, public ObjectSelectorInterface 
@@ -16,8 +17,9 @@ public:
   QPoint p2;
   enum State{None=0, Pressed, Moved, Released};
   State state;
+  Qt::MouseButton button;
   MouseMarker( );
-  void mousePressed( QPoint p );
+  void mousePressed( QPoint p, Qt::MouseButton b = Qt::NoButton );
   void mouseReleased( QPoint p );
   void mouseMoved( QPoint );
 signals:
@@ -43,8 +45,9 @@ private:
 	QString currentClass( );
 	QColor currentClassCol( );
 
+	void setSceneImage( QString  );
+
 private slots:
-	void checkMarker(  );
 	void checkCellMarker(  );
 	void on_actionExit_triggered();
     void on_actionLoad_triggered();
@@ -76,8 +79,6 @@ private slots:
 
     void on_bAddClass_clicked();
 
-    void on_bGetIon_clicked();
-
 	void savePersistence();
 	void loadPersistence();
 
@@ -87,13 +88,17 @@ private slots:
 
     void on_bSelectObjects_clicked(bool checked);
 
-    void on_bREmoveObjects_clicked(bool checked);
-
     void on_tvClasses_clicked(const QModelIndex &index);
 
 	void updateRegions();
 
     void on_tvClasses_doubleClicked(const QModelIndex &index);
+
+    void on_bSuggest_clicked();
+
+    void on_bAcceptAllSuggested_clicked();
+
+    void on_bRejectAllSuggested_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -102,11 +107,10 @@ private:
     QStandardItemModel _atlasCells;
 	ImageScene *_imageScene;
 	QList<double> _meanRbcDiam;
-	QList<QGraphicsItem*> _lineMarkers;
-	QList<QGraphicsItem*> _rectMarkers;
-	QList<QGraphicsItem*> _cellMarkers;
-	QGraphicsLineItem* _curLineMarker;
-	QGraphicsItem* _curCellMarker;
+	//QList<QGraphicsItem*> _lineMarkers;
+	QList<QGraphicsItem*> _recognizedMarkers; //marks by recognized
+	QList<QGraphicsItem*> _objectMarkers;       //Marks of used-selected objects
+	QGraphicsItem* _curMarker;
 	QString _currentProjectPath;
 	QString _currentImage;
 	QString _lastLoadedDir;
