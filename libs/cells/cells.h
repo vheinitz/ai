@@ -50,16 +50,22 @@ public:
 		_minThreshold(minThreshold),
 		_maxThreshold(maxThreshold),
 		_levels(levels)
-	{};
+	{
+		
+	};
 
-	void setMinCell( float v ){_minCell=v;}
-	void setMaxCell( float v ){_maxCell=v;}
+	void setMinCell( float v ){
+		_minCell=v;
+	}
+	void setMaxCell( float v ){
+		_maxCell=v;
+	}
 	void setMinTh( float v ){_minThreshold=v;}
 	void setMaxTh( float v ){_maxThreshold=v;}
 	void setLevels( float v ){_levels=v;}
 	
-	const TRotatedRectList & findCellRects( cv::Mat, QString dataHash = QString::null, int minCellNumber=30, int findSimilar=STD_USE_SIMILAR_CELLS, int useRoi=STD_USE_ROI );//TODO use enums for 2 last parameters
-	const TRotatedRectList & findCellRects1( cv::Mat, QString dataHash = QString::null, int minCellNumber=30, int findSimilar=STD_USE_SIMILAR_CELLS, int useRoi=STD_USE_ROI );//TODO use enums for 2 last parameters
+	const TRotatedRectList & findCellRects( cv::Mat, QString dataHash = QString::null, int minCellNumber=1);
+	const TRotatedRectList & findCellRects1( cv::Mat, QString dataHash = QString::null, int minCellNumber=1 );
 	void setCellsImage( cv::Mat m){ _imgIn = m; };//replace math when using operators
 	const std::vector< std::vector<cv::Point> > & cellContours();
 	const TRectList & cellRects() const { return  _cellRects;}

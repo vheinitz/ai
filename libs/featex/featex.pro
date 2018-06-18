@@ -18,7 +18,7 @@ INCLUDEPATH += .\
   ./features \
   "C:/Development/libs/cl2/include" 
   
-INCLUDEPATH += "C:/Development/ai/libs/cells"
+INCLUDEPATH += "C:/Development/ai.git/libs/cells"
 		
 LIBS +=	"C:/Development/libs/cl2/lib/cl2.lib" 
 LIBS +=	"C:/Development/build/cells.lib"

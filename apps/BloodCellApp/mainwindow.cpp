@@ -215,6 +215,7 @@ void MainWindow::on_bAcceptAllSuggested_clicked()
 		QGraphicsRectItem* rr =static_cast<QGraphicsRectItem*>(r);
 		_project->addObject( c, _currentImage, QPolygon( rr->rect().toRect()) );
 	}
+	updateRegions();
 
 }
 
@@ -484,6 +485,7 @@ void MainWindow::on_bRemoveClass_clicked()
 	bool ok;
 
 	_project->removeClass( currentClass( ) );
+	updateRegions();
 }
 
 
@@ -588,7 +590,7 @@ void MainWindow::on_bSuggest_clicked()
 	std::string green = FeatEx().separateChannel(img, 1 );
 	//FeatEx().op("show", green );
 
-	FeatEx().op("cells", green, QString("%1,%2,1,6,7").arg(minedge*0.75).arg(maxedge*1.25).toStdString(), "cellrects" );
+	FeatEx().op("cells", green, QString("%1,%2,1,6,7").arg(minedge*0.8).arg(maxedge*1.2).toStdString(), "cellrects" );
 	
 
 	QList<QRect> crlls = FeatEx().rects( "cellrects" );

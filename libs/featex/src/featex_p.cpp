@@ -212,10 +212,10 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 	{
 		cv::Mat m = ObjectDb::inst()._imgdb[src];
 		QString tmp(param.c_str());
-		int a = tmp.section(",",0,0).toInt(); 
+		int max = tmp.toInt(); 
 		//int max = tmp.section(",",1,1).toInt(); 
 		cv::Mat n;
-		cv::normalize( m, n, 0, a, cv::NORM_MINMAX );
+		cv::normalize( m, n, 0, max, cv::NORM_MINMAX );
 		ObjectDb::inst()._imgdb[dst] = n;
 	}
 
@@ -258,10 +258,10 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		//imshow( "BackProj", backproj );
 
 		/// Show the image
-		imshow( "pbpj", backproj );
+		//imshow( "pbpj", backproj );
 
 		/// Wait until user exits the program
-		waitKey(1);
+		//waitKey(1);
 		ObjectDb::inst()._imgdb[dst] = backproj;
 	}
 	else if ( op == "sobel" )
@@ -270,8 +270,24 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		QString tmp(param.c_str());
 		int x = tmp.section(",",0,0).toInt(); 
 		int y = tmp.section(",",1,1).toInt(); 
+		int k = tmp.section(",",2,2).toInt(); 
 		cv::Mat sob;
-   		cv::Sobel( m, sob, CV_32F, x, y );
+   		cv::Sobel( m, sob, CV_32F, x, y, k );
+		ObjectDb::inst()._imgdb[dst] = sob;
+	}
+	else if ( op == "sobelXY" )
+	{
+		cv::Mat m = ObjectDb::inst()._imgdb[src];
+		QString tmp(param.c_str());
+		int k = tmp.toInt();  
+		cv::Mat sx,sy,asx,asy,sob;
+   		cv::Sobel( m, sx, CV_32F, 1, 0, k );
+		cv::Sobel( m, sy, CV_32F, 0, 1, k );
+
+		convertScaleAbs( sx, asx );
+		convertScaleAbs( sy, asy );
+		addWeighted( asx, 0.5, asy, 0.5, 0, sob );
+
 		ObjectDb::inst()._imgdb[dst] = sob;
 	}
 	else if ( op == "dist" )
@@ -316,8 +332,8 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		}
 
 		cv::normalize(sum,sum,0, 255, NORM_MINMAX);
-		cv::imshow( "SUM", sum );
-		cv::waitKey(1);
+		//cv::imshow( "SUM", sum );
+		//cv::waitKey(1);
 		ObjectDb::inst()._imgdb[dst] = sum;
 		}
 		catch(...){}
@@ -333,8 +349,8 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		/// Canny detector
 		cv::blur( m, out, Size(3,3) );
 		cv::Canny( out, out, min, max, k );
-		cv::imshow("canny", out );
- 		cv::waitKey(1);
+		//cv::imshow("canny", out );
+ 		//cv::waitKey(1);
 		ObjectDb::inst()._imgdb[dst] = out;
 	}
 	else if ( op == "resize" )
@@ -397,19 +413,19 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 		// C++ Calculate gradient magnitude and direction (in degrees)
 		Mat mag, angle; 
 		cartToPolar(gx, gy, mag, angle, 1); 
-		cv::imshow("img", img );
-		cv::imshow("mag", mag );
-		cv::imshow("angle", angle );
- 		cv::waitKey(1);
+		//cv::imshow("img", img );
+		//cv::imshow("mag", mag );
+		//cv::imshow("angle", angle );
+ 		//cv::waitKey(1);
 	}
 	else if(op == "cells")
 	{
 		cv::Mat img = ObjectDb::inst()._imgdb[src]; 
 		QString tmp(param.c_str());
-		int cmin = tmp.section(",",0,0).toInt(); // Index of tile
-		int cmax = tmp.section(",",1,1).toInt(); // Index of tile
-		int thmin = tmp.section(",",2,2).toInt();
-		int thmax = tmp.section(",",3,3).toInt();
+		int cmin = tmp.section(",",0,0).toFloat(); // Index of tile
+		int cmax = tmp.section(",",1,1).toFloat(); // Index of tile
+		int thmin = tmp.section(",",2,2).toFloat();
+		int thmax = tmp.section(",",3,3).toFloat();
 		int lev =   tmp.section(",",4,4).toInt();
  		
 		CellExtractor ce( cmin, cmax, thmin, thmax, lev );
@@ -430,14 +446,19 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 
 		ObjectDb::inst()._rectsdb[dst] = brects;
 	}
+	else if(op == "show")
+	{
+		cv::Mat img = ObjectDb::inst()._imgdb[src];
+		cv::imshow(src, img);
+	}
 	else if(op == "seg")
 	{
 			cv::Mat img = ObjectDb::inst()._imgdb[src];
 		    // Show source image
-			imshow("Source Image", img);
+			//imshow("Source Image", img);
 			
 			// Show output image
-			imshow("Black Background Image", img);
+			//imshow("Black Background Image", img);
 			// Create a kernel that we will use for accuting/sharpening our image
 			Mat kernel = (Mat_<float>(3,3) <<
 					1,  1, 1,
@@ -1013,7 +1034,7 @@ int dft_test( const char * argc)
 
 	
  
-  cv::waitKey(3000);
+  cv::waitKey(1);
 
 return 0;
 }
@@ -1065,7 +1086,6 @@ void addTileToDbgImage( Mat & tile )
 	{
 		roiY+=border+roiRowMax;
 		roiX=border;
-		
 	}
 	tile.copyTo( dbgImg(cv::Rect(cv::Point(roiX,roiY),tile.size()) ) );
 	roiX+=border+tile.cols;

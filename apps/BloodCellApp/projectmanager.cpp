@@ -70,13 +70,8 @@ void ProjectManager::load( QString fn)
 			}
 			i._region = QPolygon( points );
 			_objects << i;
-		}
-
-
-        
+		}   
     }
-
-	
 }
 
 void ProjectManager::save( )
@@ -196,6 +191,16 @@ void ProjectManager::removeClass( QString c )
 	if ( index.isValid() )
 	{
 		_classes.removeRow(index.row()); 
+
+		for( int idx = 0; idx < _objects.size(); idx++) 
+		{
+			ImageObject i = _objects.at(idx);
+			if ( i._class == c )
+			{
+				_objects.removeAt(idx);
+				idx=0;
+			}
+		}
 	}
 }
 
