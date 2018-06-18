@@ -466,6 +466,7 @@ void MainWindow::openProject( QString fn )
 	savePersistence();
 }
 
+
 void MainWindow::on_bAddClass_clicked()
 {
 	if(!_project) return;
@@ -474,6 +475,15 @@ void MainWindow::on_bAddClass_clicked()
 	if (name.isEmpty()) return;
 
 	_project->addClass( name );
+}
+
+
+void MainWindow::on_bRemoveClass_clicked()
+{
+	if(!_project) return;
+	bool ok;
+
+	_project->removeClass( currentClass( ) );
 }
 
 
@@ -589,3 +599,8 @@ void MainWindow::on_bSuggest_clicked()
 
 }
 
+
+void MainWindow::on_bRemoveModelInstance_clicked()
+{
+
+}

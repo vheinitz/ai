@@ -190,6 +190,15 @@ void ProjectManager::addClass( QString c )
 		 );
 }
 
+void ProjectManager::removeClass( QString c )
+{
+	QModelIndex index = classIndex( c );
+	if ( index.isValid() )
+	{
+		_classes.removeRow(index.row()); 
+	}
+}
+
 void ProjectManager::setClassIcon( QString c, QPixmap icon )
 {
 	QModelIndex index = classIconIndex( c );

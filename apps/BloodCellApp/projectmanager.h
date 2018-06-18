@@ -28,6 +28,7 @@ public:
     void load( QString fn);
 	void save( );
 	void addClass( QString c );
+	void removeClass( QString c );
 	QModelIndex classIndex( QString c );
 	QModelIndex classColorIndex( QString c );
 	QColor classColor( QString c );

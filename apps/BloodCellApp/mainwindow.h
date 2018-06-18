@@ -100,6 +100,10 @@ private slots:
 
     void on_bRejectAllSuggested_clicked();
 
+    void on_bRemoveClass_clicked();
+
+    void on_bRemoveModelInstance_clicked();
+
 private:
     Ui::MainWindow *ui;
 
