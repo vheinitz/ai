@@ -104,6 +104,8 @@ private slots:
 
     void on_bRemoveModelInstance_clicked();
 
+    void on_bLearnModel_clicked();
+
 private:
     Ui::MainWindow *ui;
 

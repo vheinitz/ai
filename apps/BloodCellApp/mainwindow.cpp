@@ -588,7 +588,7 @@ void MainWindow::on_bSuggest_clicked()
 
 	std::string img = FeatEx().load( _project->_imgdb.getImagePath( _currentImage ).toStdString(), "orig" );
 	std::string green = FeatEx().separateChannel(img, 1 );
-	//FeatEx().op("show", green );
+	//FeatEx().op("seg", green );
 
 	FeatEx().op("cells", green, QString("%1,%2,1,6,7").arg(minedge*0.8).arg(maxedge*1.2).toStdString(), "cellrects" );
 	
@@ -601,6 +601,11 @@ void MainWindow::on_bSuggest_clicked()
 
 }
 
+
+void MainWindow::on_bLearnModel_clicked()
+{
+	_project->learn();
+}
 
 void MainWindow::on_bRemoveModelInstance_clicked()
 {

@@ -2,6 +2,7 @@
 #include <QFileInfo>
 #include "os/fstools.h"
 #include <QDir>
+#include <QUuid>
 
 ProjectManager::ProjectManager(QString fn)
 {
@@ -185,6 +186,30 @@ void ProjectManager::addClass( QString c )
 		 );
 }
 
+QStringList ProjectManager::classes( )
+{
+	QStringList cl;
+
+	for(int i=0; i<_classes.rowCount(); i++)
+	{
+		cl<< _classes.data( _classes.index(i,CCName) ).toString();
+	}
+	
+	return cl;
+}
+
+QStringList ProjectManager::modelImages( )
+{
+	QStringList mi;
+
+	for(int i=0; i<_modelImages.rowCount(); i++)
+	{
+		mi<< _modelImages.data( _classes.index(i,0) ).toString();
+	}
+	
+	return mi;
+}
+
 void ProjectManager::removeClass( QString c )
 {
 	QModelIndex index = classIndex( c );
@@ -247,6 +272,26 @@ void ProjectManager::addObject( QString c, QString imghash, QPolygon r )
 	_objects << obj;
 }
 
+QPair<int,int> ProjectManager::objectSizeMinMax(QString c, QString img)
+{
+	int minedge=99999999;
+	int maxedge=0;
+	
+	foreach( ImageObject i, _objects )
+	{
+		if( img.isEmpty() || i._imghash == img )
+		{
+			if ( c == i._class )
+			{
+				QRect r = i._region.boundingRect();
+				minedge = qMin(minedge,qMin(r.width(),r.height()));
+				maxedge = qMax(maxedge,qMax(r.width(),r.height()));
+			}
+		}
+	}
+	return QPair<int,int>(minedge,maxedge);
+}
+
 void ProjectManager::removeAt( QString c, QString imghash, QPoint p )
 {
 	
@@ -258,6 +303,86 @@ void ProjectManager::removeAt( QString c, QString imghash, QPoint p )
 			_objects.removeAt(i);
 		}
 	}
+}
+
+void ProjectManager::learn(  )
+{
+	int classId=0;
+	QMap<QString,int> cm;
+	foreach( QString c, classes() )
+	{
+		if ( !cm.contains(c) )
+		  cm[c] = classId++;
+	}
+
+	QMap<int, QMap< QString, QList<QRect> > > cl_img_rects;
+
+	for( int i = 0; i<_objects.size(); i++ )
+	{
+		ImageObject o = _objects.at(i);
+		cl_img_rects[ cm[o._class] ][ o._imghash ].append( o._region.boundingRect() );
+	}
+
+	QStringList cl = classes();
+	QStringList mi = modelImages();
+
+	QMap<QString, QStringList> modelData;
+
+	foreach( int c, cm )
+	{
+		foreach( QString img, cl_img_rects[c].keys() )
+		{
+			QImage p =  _imgdb.getImage( img ) ;
+
+			int maxpv =0;
+			for (int ii = 0; ii < p.height(); ii++) {
+					uchar* scan = p.scanLine(ii);
+					int depth =4;
+					for (int jj = 0; jj < p.width(); jj++) {
+
+						QRgb* rgbpixel = reinterpret_cast<QRgb*>(scan + jj*depth);
+						int g = qGray(*rgbpixel);
+						maxpv = qMax( g,maxpv );
+					}
+				}
+			double normfactor = 255. / maxpv;
+
+			foreach( QRect r, cl_img_rects[c][img] )
+			{
+				QStringList imgdata;
+				imgdata << QString::number(c);
+				QImage roi = p.copy( r ).scaled(32,32);
+				//roi.save( QString( "c:/tmp/bc/%1_%2%3%4%5.png" ).arg( img )
+				//	.arg(r.x()).arg(r.y()).arg(r.width()).arg(r.height()) );
+
+				for (int ii = 0; ii < roi.height(); ii++) {
+					uchar* scan = roi.scanLine(ii);
+					int depth =4;
+					for (int jj = 0; jj < roi.width(); jj++) {
+
+						QRgb* rgbpixel = reinterpret_cast<QRgb*>(scan + jj*depth);
+						imgdata << QString::number( (int)(qGray(*rgbpixel) * normfactor) );
+					}
+				}
+				modelData[QUuid::createUuid().toString()]= imgdata;
+			}
+		}
+	}
+
+	int i=0;
+	QList<QStringList> d1, d2;
+	foreach( QStringList l, modelData.values() )
+	{
+		if (i++< modelData.size()/2)
+			d1<<l;
+		else
+			d2<<l;
+	}
+
+	FSTools::toFile( d1, " ", "c:/tmp/bc/data" );
+	FSTools::toFile( d2, " ", "c:/tmp/bc/data1" );
+
+
 }
 
 

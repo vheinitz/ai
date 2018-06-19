@@ -199,6 +199,8 @@ std::string FeatEx_p::blur( std::string src, int dotsize, std::string dst )
 	return dst;
 }
 
+
+
 std::string FeatEx_p::op( std::string op, std::string src, std::string param, std::string dst )
 {
 	dst = dst.size()>0 ? dst: src+op;
@@ -455,10 +457,9 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 	{
 			cv::Mat img = ObjectDb::inst()._imgdb[src];
 		    // Show source image
-			//imshow("Source Image", img);
-			
-			// Show output image
-			//imshow("Black Background Image", img);
+			imshow("Source Image", img);
+			cv::waitKey(1);
+/*
 			// Create a kernel that we will use for accuting/sharpening our image
 			Mat kernel = (Mat_<float>(3,3) <<
 					1,  1, 1,
@@ -478,14 +479,19 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 			// convert back to 8bits gray scale
 			imgResult.convertTo(imgResult, CV_8UC3);
 			imgLaplacian.convertTo(imgLaplacian, CV_8UC3);
-			// imshow( "Laplace Filtered Image", imgLaplacian );
+			imshow( "Laplace Filtered Image", imgLaplacian );
 			imshow( "New Sharped Image", imgResult );
+			cv::waitKey(1);
 			img = imgResult; // copy back
+			*/
 			// Create binary image from source image
-			Mat bw;
-			cvtColor(img, bw, CV_BGR2GRAY);
-			threshold(bw, bw, 40, 255, CV_THRESH_BINARY_INV | CV_THRESH_OTSU);
+			Mat bw = img.clone();
+			//cvtColor(img, bw, CV_BGR2GRAY);
+			bool bgblack = medianMat( bw, 255 )<= 0.5;
+			int th = cv::mean(bw)[0]/2;
+			threshold(bw, bw, 220, 255, (bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV) );
 			imshow("Binary Image", bw);
+			cv::waitKey(1);
 			// Perform the distance transform algorithm
 			Mat dist;
 			distanceTransform(bw, dist, CV_DIST_L2, 3);
@@ -493,13 +499,15 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 			// so we can visualize and threshold it
 			cv::normalize(dist, dist, 0, 1., NORM_MINMAX);
 			imshow("Distance Transform Image", dist);
+			cv::waitKey(1);
 			// Threshold to obtain the peaks
 			// This will be the markers for the foreground objects
-			threshold(dist, dist, .4, 1., CV_THRESH_BINARY);
+			threshold(dist, dist, .1, 1., CV_THRESH_BINARY);
 			// Dilate a bit the dist image
 			Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
 			dilate(dist, dist, kernel1);
 			imshow("Peaks", dist);
+			cv::waitKey(1);
 			// Create the CV_8U version of the distance image
 			// It is needed for findContours()
 			Mat dist_8u;
@@ -515,12 +523,18 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 			// Draw the background marker
 			circle(markers, Point(5,5), 3, CV_RGB(255,255,255), -1);
 			imshow("Markers", markers*10000);
+			cv::waitKey(1);
 			// Perform the watershed algorithm
-			watershed(img, markers);
+
+			imshow("WS_img", img);
+			cv::waitKey(1);
+			Mat rgb;
+			cv::cvtColor(img, rgb, cv::COLOR_GRAY2BGR);
+			watershed(rgb, markers);
 			Mat mark = Mat::zeros(markers.size(), CV_8UC1);
 			markers.convertTo(mark, CV_8UC1);
 			bitwise_not(mark, mark);
-		//    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
+		    imshow("Markers_v2", mark); // uncomment this if you want to see how the mark
 										  // image looks like at that point
 			// Generate random colors
 			vector<Vec3b> colors;
@@ -547,6 +561,7 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 			}
 			// Visualize the final image
 			imshow("Final Result", out);
+			cv::waitKey(1);
 			ObjectDb::inst()._imgdb[dst] = out;
 	}
 	

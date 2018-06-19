@@ -28,6 +28,9 @@ public:
     void load( QString fn);
 	void save( );
 	void addClass( QString c );
+	QStringList classes(  );
+	QStringList modelImages( );
+	QPair<int,int> objectSizeMinMax(QString c, QString img);
 	void removeClass( QString c );
 	QModelIndex classIndex( QString c );
 	QModelIndex classColorIndex( QString c );
@@ -38,6 +41,7 @@ public:
 	void addObject( QString c, QString imghash, QPolygon r );
 	void removeAt( QString c, QString imghash, QPoint p );
 	void create( QString dir, QString fn);
+	void learn( );
 	QString addImage( QString fn );
 	ImageDatabase _imgdb;
 	QStandardItemModel _classes;
