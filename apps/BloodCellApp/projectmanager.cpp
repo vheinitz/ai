@@ -266,6 +266,32 @@ QString ProjectManager::addImage( QString fn)
 	return hash;
 }
 
+void ProjectManager::removeImage( QString hash)
+{
+
+	_imgdb.removeImage( hash );
+
+	for(int r=0; r<_modelImages.rowCount(); r++ )
+	{
+		 
+		if( _modelImages.data( _modelImages.index( r, 0 ) ).toString() == hash )
+		{
+			_modelImages.removeRow(r);
+			break;
+		}
+	}
+
+	for( int i = 0; i<_objects.size(); i++ )
+	{
+		ImageObject o = _objects.at(i);
+		if(  o._imghash == hash  )
+		{
+			_objects.removeAt(i);
+			i=0;
+		}
+	}
+}
+
 void ProjectManager::addObject( QString c, QString imghash, QPolygon r )
 {
 	static int uid = 0;

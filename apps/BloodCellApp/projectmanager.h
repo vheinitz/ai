@@ -43,6 +43,7 @@ public:
 	void create( QString dir, QString fn);
 	void learn( );
 	QString addImage( QString fn );
+	void removeImage( QString fn );
 	ImageDatabase _imgdb;
 	QStandardItemModel _classes;
 	QStandardItemModel _modelImages;

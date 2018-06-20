@@ -109,7 +109,7 @@ void MainWindow::checkCellMarker( )
 		{
 			if (m->state == MouseMarker::Pressed )
 			{
-				_project->removeAt( c, this->_currentImage, m->p1 );
+				_project->removeAt( c, _currentImage, m->p1 );
 
 				 foreach ( QGraphicsItem* r, _recognizedMarkers)
 				 {
@@ -612,5 +612,5 @@ void MainWindow::on_bLearnModel_clicked()
 
 void MainWindow::on_bRemoveModelInstance_clicked()
 {
-
+	_project->removeImage( _currentImage );
 }
