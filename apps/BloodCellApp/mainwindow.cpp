@@ -160,9 +160,9 @@ void MainWindow::checkCellMarker( )
 						{
 														
 							QPolygon p( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y()));
-							if (p.boundingRect().width() < 3)
+							if (p.boundingRect().width() < 10 || p.boundingRect().height() < 10)
 							{
-								if (_lastPolygon.boundingRect().width() < 3)
+								if (_lastPolygon.boundingRect().width() < 10 || _lastPolygon.boundingRect().height() < 10)
 									return;
 								p = _lastPolygon;// = QPolygon( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y()));
 								QRectF  r = p.boundingRect();
@@ -171,9 +171,10 @@ void MainWindow::checkCellMarker( )
 									m->p1.y()-r.height()/2,
 									r.width(),
 									r.height() );
-								_curMarker=_imageScene->addRect( nr, QPen(currentClassCol()) );
+								//_curMarker=_imageScene->addRect( nr, QPen(currentClassCol()) );
 								_project->addObject( c, _currentImage, QPolygon(nr) );
-								_objectMarkers.append( _curMarker );
+								updateRegions();
+								//_objectMarkers.append( _curMarker );
 							}
 							else
 								_lastPolygon = p;
@@ -182,8 +183,8 @@ void MainWindow::checkCellMarker( )
 								_currentImage = _project->addImage( _currentImage ); //TODO different vars for current ing and current hash
 
 
-							_project->addObject( c, _currentImage, p );
-							_objectMarkers.append( _curMarker );
+							//_project->addObject( c, _currentImage, p );
+							//_objectMarkers.append( _curMarker );
 						}
 
 					}
@@ -525,6 +526,8 @@ void MainWindow::on_tvClasses_clicked(const QModelIndex &index)
 
 void MainWindow::updateRegions()
 {
+	if ( _curMarker )
+		_imageScene->removeItem( _curMarker);
 	QString c = currentClass( );
 	if ( c.isEmpty() )
 		return;

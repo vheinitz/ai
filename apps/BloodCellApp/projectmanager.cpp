@@ -215,8 +215,7 @@ void ProjectManager::removeClass( QString c )
 	QModelIndex index = classIndex( c );
 	if ( index.isValid() )
 	{
-		_classes.removeRow(index.row()); 
-
+		setClassIcon( c ); 
 		for( int idx = 0; idx < _objects.size(); idx++) 
 		{
 			ImageObject i = _objects.at(idx);
@@ -234,8 +233,15 @@ void ProjectManager::setClassIcon( QString c, QPixmap icon )
 	QModelIndex index = classIconIndex( c );
 	if ( !index.isValid() )
 		return;
+
+	QString iconpath = _classes.data(index,ProjectManager::ClassIconFile).toString();
+	QFile::remove(iconpath);
+
+	if ( icon.isNull() )
+		return;
+
 	QString iconhash = FSTools::getHash( icon );
-	QString iconpath = _dir+"/icons/"+iconhash+".png";
+	iconpath = _dir+"/icons/"+iconhash+".png";
 	bool ok = icon.save(iconpath);
 	_classes.setData(index,icon.scaled( 50,50 ),Qt::DecorationRole);
 	_classes.setData(index,iconpath,ProjectManager::ClassIconFile);

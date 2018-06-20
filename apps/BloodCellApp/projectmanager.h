@@ -36,7 +36,7 @@ public:
 	QModelIndex classColorIndex( QString c );
 	QColor classColor( QString c );
 	QModelIndex classIconIndex( QString c );
-	void setClassIcon( QString c, QPixmap icon );
+	void setClassIcon( QString c, QPixmap icon = QPixmap() );
 	void setClassColor( QString c, QColor col );
 	void addObject( QString c, QString imghash, QPolygon r );
 	void removeAt( QString c, QString imghash, QPoint p );
