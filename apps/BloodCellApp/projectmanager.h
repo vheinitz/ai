@@ -30,7 +30,7 @@ public:
 	void addClass( QString c );
 	QStringList classes(  );
 	QStringList modelImages( );
-	QPair<int,int> objectSizeMinMax(QString c, QString img);
+	QPair<int,int> objectSizeMinMax(QString c, QString img = QString::null);
 	void removeClass( QString c );
 	QModelIndex classIndex( QString c );
 	QModelIndex classColorIndex( QString c );
@@ -40,8 +40,10 @@ public:
 	void setClassColor( QString c, QColor col );
 	void addObject( QString c, QString imghash, QPolygon r );
 	void removeAt( QString c, QString imghash, QPoint p );
+	ImageObject objectAt( QString c, QString imghash, QPoint p );
 	void create( QString dir, QString fn);
 	void learn( );
+	void test( QString img, QString c = QString::null );
 	QString addImage( QString fn );
 	void removeImage( QString fn );
 	ImageDatabase _imgdb;

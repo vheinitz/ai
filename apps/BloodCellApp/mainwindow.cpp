@@ -13,6 +13,7 @@
 #include <QSharedPointer>
 #include <QInputDialog>
 #include <QColorDialog>
+#include <QProcess>
 
 
 class ProjectManager;
@@ -81,6 +82,17 @@ QString MainWindow::currentClass( )
 	return c;
 }
 
+int MainWindow::currentClassIdx( )
+{
+	if ( _classesSelection->selectedRows().size()==1 )
+	{
+		QModelIndex ix = _classesSelection->selectedRows().first();
+		return ix.row();
+	}	
+	return -1;
+}
+
+
 QColor MainWindow::currentClassCol( )
 {
 	QColor c;
@@ -107,15 +119,19 @@ void MainWindow::checkCellMarker( )
 	{
 		if ( m->button == Qt::RightButton )
 		{
+			if (  ui->bMarkSize->isChecked() )
+				return;
+
 			if (m->state == MouseMarker::Pressed )
 			{
-				_project->removeAt( c, _currentImage, m->p1 );
+				_project->removeAt( c, _currentImage, m->p1 );				
 
 				 foreach ( QGraphicsItem* r, _recognizedMarkers)
 				 {
 					QGraphicsRectItem* rr =static_cast<QGraphicsRectItem*>(r);
 					if ( rr->boundingRect().contains(m->p1) )
 					{
+						
 						_imageScene->removeItem(r);
 						_recognizedMarkers.removeAll(r);
 						break;
@@ -141,6 +157,10 @@ void MainWindow::checkCellMarker( )
 							foreach ( QGraphicsItem* r, _objectMarkers)
 								_imageScene->removeItem(r);
 						}
+						else if (  ui->bMarkSize->isChecked() )
+						{
+							_curMarker=_imageScene->addLine( m->p1.x(), m->p1.y(), m->p1.x(), m->p1.y() ,QPen(QColor("green")) );
+						}				
 						else
 						{
 							_curMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),0,0,QPen(currentClassCol()) );
@@ -154,14 +174,32 @@ void MainWindow::checkCellMarker( )
 							QPixmap icon = QPixmap (_project->_imgdb.getImagePath( _currentImage )).copy( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y() );
 							_project->setClassIcon( c ,icon );
 							ui->bGetIcon->setChecked(false);
+							return;
 						}
 
-						if(_project)
+						else if (  ui->bMarkSize->isChecked() )
 						{
-														
+							ui->eKnownSizePx->setText( QString("%1").arg( qAbs(m->p1.x() - m->p2.x()) ) );
+							ui->bMarkSize->setChecked(false);
+							if ( _curMarker ) 
+								_imageScene->removeItem( _curMarker);
+							_curMarker=0;
+
+							//_curMarker=_imageScene->addLine(m->p1,m->p2,QPen(currentClassCol()) );
+							return;
+						}	
+
+						if(_project)
+						{															
 							QPolygon p( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y()));
 							if (p.boundingRect().width() < 10 || p.boundingRect().height() < 10)
 							{
+								ImageObject o = _project->objectAt(c, _currentImage, m->p1);
+								if ( !o._class.isEmpty() )
+								{
+									_lastPolygon = o._region;
+									return;
+								}
 								if (_lastPolygon.boundingRect().width() < 10 || _lastPolygon.boundingRect().height() < 10)
 									return;
 								p = _lastPolygon;// = QPolygon( QRect( m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y()));
@@ -195,7 +233,14 @@ void MainWindow::checkCellMarker( )
 						if ( _curMarker ) 
 							_imageScene->removeItem( _curMarker);
 
-						_curMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y(),QPen(currentClassCol()) );
+						if (  ui->bMarkSize->isChecked() )
+						{
+							_curMarker=_imageScene->addLine( m->p1.x(), m->p1.y(), m->p2.x(), m->p2.y() ,QPen(QColor("green")) );
+						}	
+						else
+						{
+							_curMarker=_imageScene->addRect(m->p1.x(),m->p1.y(),m->p2.x()-m->p1.x(),m->p2.y()-m->p1.y(),QPen(currentClassCol()) );
+						}
 						
 					}
 					break;
@@ -301,6 +346,11 @@ void MainWindow::loadDir(QString dn)
 
 void MainWindow::setSceneImage( QString img )
 {
+	if ( _curMarker )
+	{
+		_imageScene->removeItem( _curMarker);
+		_curMarker=0;
+	}
 	_currentImage = img;
 	QPixmap p( _project->_imgdb.getImagePath( _currentImage ) );
 	_imageScene->setImage(p);	
@@ -527,7 +577,10 @@ void MainWindow::on_tvClasses_clicked(const QModelIndex &index)
 void MainWindow::updateRegions()
 {
 	if ( _curMarker )
+	{
 		_imageScene->removeItem( _curMarker);
+		_curMarker=0;
+	}
 	QString c = currentClass( );
 	if ( c.isEmpty() )
 		return;
@@ -608,9 +661,94 @@ void MainWindow::on_bSuggest_clicked()
 void MainWindow::on_bLearnModel_clicked()
 {
 	_project->learn();
+
+	QString cmd = QString(
+	"c:/tmp/tinydnn_test/x64/Release/tinydnn_test.exe "\
+	"--model c:/tmp/bc/model_ana "\
+	"--mode train "\
+	"--classes 3 "\
+	"--train_data c:/tmp/bc/data");
+
+	QProcess p;
+	int res = p.execute( cmd );
 }
 
 void MainWindow::on_bRemoveModelInstance_clicked()
 {
 	_project->removeImage( _currentImage );
+}
+
+void MainWindow::on_bTest_clicked()
+{
+	//_project->test( _currentImage, currentClass() );
+
+    QString cmd = QString(
+	"c:/tmp/tinydnn_test/x64/Release/tinydnn_test.exe "\
+	"--model c:/tmp/bc/model_ana "\
+	"--mode test "\
+	"--result c:/tmp/bc/result.txt "\
+	"--classes 3 "\
+	"--test_data c:/tmp/bc/test.txt");
+
+	QProcess p;
+	int res = p.execute( cmd );
+
+	QStringList resdata =  FSTools::fromFile( "c:/tmp/bc/result.txt" );
+
+	int edge = _project->objectSizeMinMax( currentClass() ).second;
+
+	int step = edge/4;
+	int idx=0;
+	int classIdx = currentClassIdx();
+	for ( int x=0; x<2560-edge; x+=step )
+	{
+		for ( int y=0; y<1920-edge; y+=step )
+		{
+			if ( resdata.size()> idx && resdata.at(idx).toInt() == classIdx )
+			{
+				_imageScene->addRect(x+edge/2,y+edge/2,20,20,QPen(currentClassCol()) );
+				qApp->processEvents();
+			}
+			idx++;
+		}
+	}
+}
+
+void MainWindow::on_bDevTest_clicked()
+{
+		// Collect statistics on class
+	QString c = currentClass( );
+	if ( c.isEmpty() )
+		return;
+
+	if ( _currentImage.isEmpty() )
+		return;
+
+	int minedge=99999999;
+	int maxedge=0;
+	foreach( ImageObject i, _project->_objects )
+	{
+		//if( i._imghash == _currentImage )
+		{
+			if ( c == i._class )
+			{
+				QRect r = i._region.boundingRect();
+				minedge = qMin(minedge,qMin(r.width(),r.height()));
+				maxedge = qMax(maxedge,qMax(r.width(),r.height()));
+			}
+		}
+	}
+
+	std::string img = FeatEx().load( _project->_imgdb.getImagePath( _currentImage ).toStdString(), "orig" );
+	std::string green = FeatEx().separateChannel(img, 1 );
+	//FeatEx().op("seg", green );
+
+	FeatEx().op("cells1", green, QString("%1,%2,1,6,7").arg(minedge*0.8).arg(maxedge*1.2).toStdString(), "cellrects" );
+	
+
+	QList<QRect> crlls = FeatEx().rects( "cellrects" );
+	foreach( QRect cr,  crlls )
+	{
+		_recognizedMarkers << _imageScene->addRect( cr.x(),cr.y(),cr.width(),cr.height(),QPen(QColor("blue")) ); // get from settings
+	}
 }

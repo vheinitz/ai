@@ -337,6 +337,19 @@ void ProjectManager::removeAt( QString c, QString imghash, QPoint p )
 	}
 }
 
+ImageObject ProjectManager::objectAt( QString c, QString imghash, QPoint p )
+{
+	for( int i = 0; i<_objects.size(); i++ )
+	{
+		ImageObject o = _objects.at(i);
+		if( o._class == c && o._imghash == imghash && o._region.boundingRect().contains(p) )
+		{
+			return o;
+		}
+	}
+	return ImageObject();
+}
+
 void ProjectManager::learn(  )
 {
 	int classId=0;
@@ -402,21 +415,74 @@ void ProjectManager::learn(  )
 	}
 
 	int i=0;
-	QList<QStringList> d1, d2;
+	QList<QStringList> d;
 	foreach( QStringList l, modelData.values() )
 	{
-		if (i++< modelData.size()/2)
-			d1<<l;
-		else
-			d2<<l;
+			d<<l;
 	}
 
-	FSTools::toFile( d1, " ", "c:/tmp/bc/data" );
-	FSTools::toFile( d2, " ", "c:/tmp/bc/data1" );
-
+	FSTools::toFile( d, " ", "c:/tmp/bc/data" );
 
 }
 
+#include <QLabel>
+#include <QApplication>
+
+void ProjectManager::test( QString imgid, QString cn )
+{
+	QLabel l;
+	foreach( QString c, classes() )
+	{
+		if( !cn.isEmpty() )
+			c = cn;
+		QList< QList<int> > data;
+		QPair<int,int> csize = objectSizeMinMax( c);
+		int edge = csize.second;
+		QImage img =  _imgdb.getImage( imgid ) ;
+
+		int maxpv =0;
+		for (int ii = 0; ii < img.height(); ii++) {
+				uchar* scan = img.scanLine(ii);
+				int depth =4;
+				for (int jj = 0; jj < img.width(); jj++) {
+
+					QRgb* rgbpixel = reinterpret_cast<QRgb*>(scan + jj*depth);
+					int g = qGray(*rgbpixel);
+					maxpv = qMax( g,maxpv );
+				}
+			}
+		double normfactor = 255. / maxpv;
+		
+        int step = edge/4;
+		for ( int x=0; x<img.width()-edge; x+=step )
+		{
+			for ( int y=0; y<img.height()-edge; y+=step )
+			{
+				QList<int> linedata;
+				linedata << 0; // Class
+				//QImage r =  img.copy(x,y,edge,edge);
+				//r.save( QString("c:/tmp/bc/t/%1_%2_%3.png").arg( c ).arg( x ).arg( y ) );
+
+
+				for (int ii = y; ii < y + edge; ii++) {
+					uchar* scan = img.scanLine(ii);
+					int depth =4;
+					for (int jj = x; jj < x+ edge; jj++) {
+
+						QRgb* rgbpixel = reinterpret_cast<QRgb*>(scan + jj*depth);
+						int g = qGray(*rgbpixel * normfactor);
+						linedata << g;
+					}
+				}
+				data << linedata;
+				//FSTools::toCsv( data, QString("c:/tmp/bc/test_%1.txt").arg(c), ' ' );
+			}
+		}
+		FSTools::toCsv( data, QString("c:/tmp/bc/test_%1.txt").arg(c), ' ' );
+		if( !cn.isEmpty() )
+			break; 
+	}	
+}
 
 void ProjectManager::create( QString dir, QString fn)
 {
@@ -428,3 +494,4 @@ void ProjectManager::create( QString dir, QString fn)
 
 	load( dir+"/"+fn );
 }
+

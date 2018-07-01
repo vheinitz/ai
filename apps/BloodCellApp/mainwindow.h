@@ -43,6 +43,7 @@ public:
 
 private:
 	QString currentClass( );
+	int currentClassIdx( );
 	QColor currentClassCol( );
 
 	void setSceneImage( QString  );
@@ -105,6 +106,9 @@ private slots:
     void on_bRemoveModelInstance_clicked();
 
     void on_bLearnModel_clicked();
+	void on_bTest_clicked();
+
+    void on_bDevTest_clicked();
 
 private:
     Ui::MainWindow *ui;

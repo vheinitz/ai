@@ -448,6 +448,91 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 
 		ObjectDb::inst()._rectsdb[dst] = brects;
 	}
+	else if(op == "cells1")
+	{		
+		cv::Mat img = ObjectDb::inst()._imgdb[src]; 
+		
+		try{
+			cv::Mat _imgIn = img.clone();
+			cv::medianBlur( _imgIn, _imgIn, cv::Size(3,3).width );
+			cv::normalize(_imgIn,_imgIn,0,255,CV_MINMAX);
+			double median = medianMat( _imgIn, 255 );
+			int imed = median * 255;
+			bool bgblack = median <= 0.5;
+
+			Mat th = Mat::zeros( _imgIn.rows, _imgIn.cols, CV_8UC1 );
+			Mat mask = Mat::zeros( _imgIn.rows, _imgIn.cols, CV_8UC1 );
+			Mat tmp = Mat::zeros( _imgIn.rows, _imgIn.cols, CV_8UC1 );
+
+			vector<vector<Point> > allContours;
+			vector<cv::Rect> allRegions;
+
+			Mat dist;
+			Mat vdist;
+
+			//for ( int testTh=bgblack?_minThreshold:_maxThreshold; 
+			//	testTh!= (bgblack?_maxThreshold:_minThreshold); 
+			//	testTh+=bgblack?1:-1 )
+			{
+				//cv::threshold(_imgIn ,th,imed*.95, 255,  bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV);
+				//cv::threshold(_imgIn ,th, imed, 255, (bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV) | CV_THRESH_OTSU);
+				cv::adaptiveThreshold(_imgIn ,th, 255, ADAPTIVE_THRESH_GAUSSIAN_C, (bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV), 35, 5 );//| CV_THRESH_OTSU);
+				Mat kernel1 = Mat::ones(3, 3, CV_8UC1);
+				for (int i=0; i< 1;i++)
+				{
+					dilate(th, th, kernel1);
+					erode(th, th, kernel1);
+				}
+				vector<vector<Point> > contours;		
+
+				//cv::imshow("th", th);
+				//cv::waitKey(1);
+				
+				findContours(th, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);   
+			
+				mask = 0;
+				for( unsigned int i = 0; i < contours.size(); i++ )
+				{ 
+					drawContours(mask, contours, i, Scalar(255), CV_FILLED);
+				}
+
+				cv::imshow("_mask", mask);
+				cv::waitKey(1);
+
+				
+				cv::distanceTransform(mask, dist, CV_DIST_L2, 3);			
+				cv::normalize(dist, vdist, 0, 255, NORM_MINMAX);
+				cv::imshow("Distance Transform Image", vdist);
+				cv::waitKey(1);
+			}
+
+			
+
+			double min, max;
+			cv::Point pmax;
+			Mat tmp1 = dist.clone();
+			while (true)
+			{
+				cv::minMaxLoc(tmp1, 0, &max, 0, &pmax);
+				if ( max < 12 ) 
+					break;
+				cv::circle(_imgIn, pmax, 3 , cv::Scalar(255), 2 );
+				cv::circle(tmp1, pmax, max , cv::Scalar(), CV_FILLED );
+				
+			}
+
+			//cv::imshow("Distance Transform Image, M", vdist);
+			cv::imshow("In cells", _imgIn );
+			cv::waitKey(1);
+			
+		}
+		catch( ... )
+		{
+			int i;
+			i++;
+		}
+
+	}
 	else if(op == "show")
 	{
 		cv::Mat img = ObjectDb::inst()._imgdb[src];
@@ -489,7 +574,7 @@ std::string FeatEx_p::op( std::string op, std::string src, std::string param, st
 			//cvtColor(img, bw, CV_BGR2GRAY);
 			bool bgblack = medianMat( bw, 255 )<= 0.5;
 			int th = cv::mean(bw)[0]/2;
-			threshold(bw, bw, 220, 255, (bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV) );
+			threshold(bw, bw, th, 255, (bgblack ? CV_THRESH_BINARY: CV_THRESH_BINARY_INV) );
 			imshow("Binary Image", bw);
 			cv::waitKey(1);
 			// Perform the distance transform algorithm
